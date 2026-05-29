@@ -33357,6 +33357,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 7326646525156461379}
+        m_TargetAssemblyTypeName: FeedbackFace, Assembly-CSharp
+        m_MethodName: SetIndex
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_AlphaFadeSpeed: 0.15
 --- !u!114 &934653545
 MonoBehaviour:
@@ -59548,37 +59560,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1788440441
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1788440442}
-  m_Layer: 0
-  m_Name: face-meh-solid
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &1788440442
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1788440441}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1790118646
 GameObject:
   m_ObjectHideFlags: 0
@@ -68200,7 +68181,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5c2fff2d81aa380488d037bdfa805a6e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c87c5521bdca20a4e8ace53927f7472f, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -108044,6 +108025,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6657326793725547772}
   - component: {fileID: 7326646525156461378}
+  - component: {fileID: 7326646525156461380}
   - component: {fileID: 7326646525156461379}
   m_Layer: 0
   m_Name: FaceTracker
@@ -143393,8 +143375,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   evaluationTime: 10
+  faceThreshold: 0.012
   SC_detectFaceNegativeAffect: {fileID: 0}
-  feedbackImage: {fileID: 0}
+  feedbackImage: {fileID: 2067656295}
+--- !u!114 &7326646525156461380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3844862912856554668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 195e9782504c2a148b90d4371cabb2c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weightThreshold: 0.002
 --- !u!114 &7331117866471994853
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188598,4 +188594,3 @@ SceneRoots:
   - {fileID: 919672513}
   - {fileID: 1785572877}
   - {fileID: 354914302}
-  - {fileID: 1788440442}

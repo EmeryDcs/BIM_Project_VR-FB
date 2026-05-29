@@ -1,9 +1,12 @@
+using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GroupFaceFeedback : MonoBehaviour
+public class GroupFaceFeedback : NetworkBehaviour
 {
+	public static GroupFaceFeedback Instance { get; private set; }
+
 	[SerializeField]
 	private GameObject feedbackGroupImage;
 	[SerializeField]
@@ -11,39 +14,47 @@ public class GroupFaceFeedback : MonoBehaviour
 	[SerializeField]
 	private AudioSource announcementFeedback;
 
-	private List<FeedbackFace> feedbackFaces = new List<FeedbackFace>();
+	private bool isLecteurFocused = true;
+	private bool isCalculateurFocused = false;
+	private bool isModelisateurFocused = false;
 
 	private void Awake()
 	{
 		announcementFeedback = GetComponent<AudioSource>();
 	}
 
-	public void GetAllScriptsFeedbackFace()
+	public void SetFocus(int roleIndex, bool isFocused)
 	{
-		foreach (FeedbackFace script in FindObjectsOfType<FeedbackFace>())
+		switch (roleIndex)
 		{
-			feedbackFaces.Add(script);
+			case 0:
+				isLecteurFocused = isFocused;
+				break;
+			case 1:
+				isCalculateurFocused = isFocused;
+				break;
+			case 2:
+				isModelisateurFocused = isFocused;
+				break;
+			default:
+				Debug.LogWarning("[Emery] Invalid role index: " + roleIndex);
+				break;
 		}
 	}
 
-	private void Update()
+	public override void Render()
 	{
-		if (feedbackFaces.Count == 0) return;
-
-		int howManyDistracted = 0;
-		foreach (FeedbackFace script in feedbackFaces)
+		if (!isCalculateurFocused && !isLecteurFocused && !isModelisateurFocused)
 		{
-			if (script != null)
+			if (!feedbackGroupImage.activeSelf)
 			{
-				howManyDistracted += script.GetIsDistracted() ? 1 : 0;
+				feedbackGroupImage.SetActive(true);
+				if (announcementFeedback != null)
+				{
+					announcementFeedback.Play();
+				}
+				StartCoroutine(DisableFeedbackGroupImage());
 			}
-		}
-
-		if (howManyDistracted >= feedbackFaces.Count)
-		{
-			feedbackGroupImage.SetActive(true);
-			announcementFeedback.Play();
-			StartCoroutine(DisableFeedbackGroupImage());
 		}
 	}
 
@@ -51,5 +62,24 @@ public class GroupFaceFeedback : MonoBehaviour
 	{
 		yield return new WaitForSeconds(timerBeforeDisablingFeedback);
 		feedbackGroupImage.SetActive(false);
+	}
+
+	/// <summary>
+	/// Création de l'objet et récupération de tous les objets ciblés par chacun des rôles.
+	/// </summary>
+	public override void Spawned()
+	{
+		Debug.Log("[Emery] GroupFaceFeedback properly Spawned via Fusion.");
+
+		// Pour un objet de scène unique (comportement de Singleton)
+		if (GlowObjectRaycasted.Instance == null)
+		{
+			Instance = this;
+		}
+		else if (Instance != this)
+		{
+			// Si un autre existe déjà en scène, on retire silencieusement celui-ci du réseau
+			Runner.Despawn(Object);
+		}
 	}
 }
