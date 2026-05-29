@@ -14,7 +14,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/EXP1/Scenes/Tutorial/BIM-EXP_Tutorial_test.unity
     guid: c9d08ea226e2adc4f95c9a3236bc1d8b
-  - enabled: 0
+  - enabled: 1
     path: Assets/EXP1/Scenes/Exp1_V3.unity
     guid: 87a815ea869454249b02a2a19bbb3be9
   m_configObjects:
