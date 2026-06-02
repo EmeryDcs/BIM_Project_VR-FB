@@ -38,7 +38,7 @@ public class FeedbackFace : MonoBehaviour
 	private float timerFocusInLastElapsedTime = 0f;
 	void FixedUpdate()
 	{
-		if (NetworkManager.Instance.Runner == null || NetworkManager.Instance.Runner.ActivePlayers.Count() < 3)
+		if (NetworkManager.Instance.Runner == null || GroupFaceFeedback.Instance == null || NetworkManager.Instance.Runner.ActivePlayers.Count() < 3)
 			return;
 
 		timer += Time.deltaTime;
@@ -59,14 +59,16 @@ public class FeedbackFace : MonoBehaviour
 				cpt += f;
 			}
 
-			float t = (float)(cpt + lastMinute.Count) / (2f * lastMinute.Count);
-			feedbackImage.GetComponent<Image>().color = new Color(t, t, t);
-
-			if (cpt/lastMinute.Count >= faceThreshold)
+			//float t = (float)(cpt + lastMinute.Count) / (2f * lastMinute.Count);
+			//feedbackImage.GetComponent<Image>().color = new Color(t, t, t);
+			float tmpCpt = cpt;
+			float tmpLastMinuteCount = lastMinute.Count;
+			if (tmpCpt / tmpLastMinuteCount >= faceThreshold)
 			{
 				hasBeenFocusedInLastElapsedTime = true;
 				GroupFaceFeedback.Instance.SetFocus(index, hasBeenFocusedInLastElapsedTime);
 				timerFocusInLastElapsedTime = 0f;
+				feedbackImage.SetActive(true);
 			}
 
 			if (hasBeenFocusedInLastElapsedTime)
@@ -76,6 +78,7 @@ public class FeedbackFace : MonoBehaviour
 				{
 					hasBeenFocusedInLastElapsedTime = false;
 					GroupFaceFeedback.Instance.SetFocus(index, hasBeenFocusedInLastElapsedTime);
+					feedbackImage.SetActive(false);
 				}
 			}
 		}

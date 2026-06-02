@@ -62,13 +62,11 @@ public class DetectFaceNegativeAffect : MonoBehaviour
 			float weight = _faceExpressions.GetWeight(expression);
 			if (weight > weightThreshold) // Seuil pour considérer l'expression comme active
             {
-                //text.text = "Active expression";
                 isExpressionActive = true;
 				continue; // Sortir de la boucle dès qu'une expression est active
 			}
 			else
 			{
-				//text.text = $"Weight too low : {weight}";
 				isExpressionActive = false;
 				break;
 			}

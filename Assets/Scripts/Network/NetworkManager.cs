@@ -79,7 +79,7 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
             GameMode = GameMode.Shared,
             SessionName = sessionName,
             SceneManager = GetComponent<NetworkSceneManagerDefault>(),
-           Scene = SceneRef.FromIndex(2)
+           Scene = SceneRef.FromIndex(1)
         };
         await Runner.StartGame(args);
     }

@@ -108,7 +108,6 @@ public class DetectSpeaking : MonoBehaviour
 
 				if (currentSpeakingTime >= timeRequiredToSpeak)
 				{
-					Debug.Log("[Emery] Player " + index + " is speaking! (Volume: " + currentDb.ToString("F1") + " dB)");
 					isSpeaking = true;
 				}
 			}
@@ -117,7 +116,6 @@ public class DetectSpeaking : MonoBehaviour
 				// Si le son baisse, on réinitialise
 				currentSpeakingTime = 0f;
 				isSpeaking = false;
-				Debug.Log("[Emery] Player " + index + " is not speaking! (Volume: " + currentDb.ToString("F1") + " dB)");
 			}
 		}
 	}
