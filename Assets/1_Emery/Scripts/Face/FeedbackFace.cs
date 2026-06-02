@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Fusion;
 using System.Linq;
 
 public class FeedbackFace : MonoBehaviour
@@ -39,7 +38,7 @@ public class FeedbackFace : MonoBehaviour
 	private float timerFocusInLastElapsedTime = 0f;
 	void FixedUpdate()
 	{
-		if (NetworkManager.Instance.Runner.ActivePlayers.Count() < 3)
+		if (NetworkManager.Instance.Runner == null || NetworkManager.Instance.Runner.ActivePlayers.Count() < 3)
 			return;
 
 		timer += Time.deltaTime;

@@ -33,7 +33,6 @@ public class GetRaycastedObject : MonoBehaviour
 		{
 			lastSentObject = currentObject;
 			GlowObjectRaycasted.Instance.RPC_SetGazedObject(index, currentObject);
-			Debug.Log($"[Emery] Send new object.");
 		}
 	}
 

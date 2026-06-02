@@ -1,6 +1,5 @@
 using Fusion;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GroupFaceFeedback : NetworkBehaviour
@@ -14,9 +13,9 @@ public class GroupFaceFeedback : NetworkBehaviour
 	[SerializeField]
 	private AudioSource announcementFeedback;
 
-	private bool isLecteurFocused = true;
-	private bool isCalculateurFocused = false;
-	private bool isModelisateurFocused = false;
+	private bool isLecteurFocused = false;
+	private bool isCalculateurFocused = true; //À changer pour le build en false
+	private bool isModelisateurFocused = true; //À changer pour le build en false
 
 	private void Awake()
 	{
@@ -72,7 +71,7 @@ public class GroupFaceFeedback : NetworkBehaviour
 		Debug.Log("[Emery] GroupFaceFeedback properly Spawned via Fusion.");
 
 		// Pour un objet de scène unique (comportement de Singleton)
-		if (GlowObjectRaycasted.Instance == null)
+		if (GroupFaceFeedback.Instance == null)
 		{
 			Instance = this;
 		}

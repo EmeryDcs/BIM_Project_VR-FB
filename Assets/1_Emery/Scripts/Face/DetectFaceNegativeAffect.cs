@@ -25,9 +25,6 @@ public class DetectFaceNegativeAffect : MonoBehaviour
 		au17_T = OVRFaceExpressions.FaceExpression.ChinRaiserT;
 		au17_B = OVRFaceExpressions.FaceExpression.ChinRaiserB;
 
-		Debug.Log("[Emery] Initializing DetectFaceNegativeAffect with expressions: " +
-			$"{au15_L}, {au15_R}, {au17_T}, {au17_B}");
-
 		face_negative_affect.Add(au15_L);
 		face_negative_affect.Add(au15_R);
 		face_negative_affect.Add(au17_T);
@@ -50,7 +47,6 @@ public class DetectFaceNegativeAffect : MonoBehaviour
 			return;
 		}
 
-		string debugText = "Face Negative Affect Weights:\n";
 		for (int i = 0; i < face_negative_affect.Count; i++)
 		{
 			OVRFaceExpressions.FaceExpression expression = face_negative_affect[i];
@@ -64,7 +60,6 @@ public class DetectFaceNegativeAffect : MonoBehaviour
 			}
 
 			float weight = _faceExpressions.GetWeight(expression);
-			debugText += $"{expression}: {weight:F3}\n";
 			if (weight > weightThreshold) // Seuil pour considérer l'expression comme active
             {
                 //text.text = "Active expression";
@@ -78,7 +73,6 @@ public class DetectFaceNegativeAffect : MonoBehaviour
 				break;
 			}
 		}
-		Debug.Log("[Emery] " + debugText);
 	}
 
 	public bool GetIsExpressionActive()

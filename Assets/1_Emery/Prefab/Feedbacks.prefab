@@ -245,6 +245,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7855529377346801596}
+  - component: {fileID: 6079697336874828767}
   - component: {fileID: 6506932423082343242}
   - component: {fileID: 2239327231349232417}
   - component: {fileID: 8824057809834831709}
@@ -272,6 +273,19 @@ Transform:
   - {fileID: 1056431082306461591}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6079697336874828767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7303452367425572279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28e8675485872974bbf32253b4d8aa2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentSpeaker: -1
 --- !u!114 &6506932423082343242
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,7 +327,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 2a56d99f349f8eb4691225feaa6d73d3, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -415,5 +429,6 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
+  - {fileID: 6079697336874828767}
   - {fileID: 6506932423082343242}
   - {fileID: 2239327231349232417}
