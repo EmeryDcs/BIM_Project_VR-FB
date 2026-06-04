@@ -30,7 +30,6 @@ public class StartActivity : NetworkBehaviour
 
     public override void Spawned()
     {
-        Debug.Log("[Emery] StartActivity Spawned with Object: " + Object);
         if (HasInputAuthority) Local = this;
 
         // your existing init...
@@ -121,4 +120,8 @@ public class StartActivity : NetworkBehaviour
             Debug.LogWarning("StartActivity.Local not spawned/ready yet.");
     }
 
+    public int GetMaxPlayer()
+    {
+        return MaxPlayers;
+	}
 }

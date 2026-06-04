@@ -13,9 +13,9 @@ public class GroupFaceFeedback : NetworkBehaviour
 	[SerializeField]
 	private AudioSource announcementFeedback;
 
-	private bool isLecteurFocused = false;
-	private bool isCalculateurFocused = false; //À changer pour le build en false
-	private bool isModelisateurFocused = false; //À changer pour le build en false
+	private bool isLecteurFocused = true;
+	private bool isCalculateurFocused = true;
+	private bool isModelisateurFocused = true;
 
 	private void Awake()
 	{

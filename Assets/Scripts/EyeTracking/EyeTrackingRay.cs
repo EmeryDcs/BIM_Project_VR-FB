@@ -50,8 +50,10 @@ public class EyeTrackingRay : MonoBehaviour
         lineRenderer.endWidth = rayWidth;
         lineRenderer.startColor = rayColorDefaultState;
         lineRenderer.endColor = rayColorDefaultState;
-        lineRenderer.SetPosition(0, transform.position);
-        lineRenderer.SetPosition(1, new Vector3(transform.position.x, transform.position.y, transform.position.z + rayDistance));
+        
+        // CORRECTION : L'origine est (0,0,0) en espace local.
+        lineRenderer.SetPosition(0, Vector3.zero);
+        lineRenderer.SetPosition(1, Vector3.forward * rayDistance);
     }
 
     private void Update()
@@ -64,7 +66,11 @@ public class EyeTrackingRay : MonoBehaviour
         if (!intercepting)
         {
             lineRenderer.startColor = lineRenderer.endColor = rayColorDefaultState;
-            lineRenderer.SetPosition(1, new Vector3(0, 0, transform.position.z + rayDistance));
+            
+            // CORRECTION : Réinitialisation simple en espace local.
+            lineRenderer.SetPosition(0, Vector3.zero);
+            lineRenderer.SetPosition(1, Vector3.forward * rayDistance);
+            
             HoverEnded();
         }
     }
