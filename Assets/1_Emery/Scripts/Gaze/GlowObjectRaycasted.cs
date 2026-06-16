@@ -10,10 +10,6 @@ public class GlowObjectRaycasted : NetworkBehaviour
 {
 	public static GlowObjectRaycasted Instance { get; private set; }
 
-	private GameObject lecteur;
-	private GameObject calculateur;
-	private GameObject modelisateur;
-
 	[Networked]
 	public NetworkObject lecteur_GazedObject { get; set; }
 	[Networked]
@@ -23,7 +19,6 @@ public class GlowObjectRaycasted : NetworkBehaviour
 
 	private NetworkObject currentGameObject = null;
 	private float timer = 0f;
-	private int currentPlayers = 0;
 
 	/// <summary>
 	/// Récupération de tous les objets ciblés par chacun des rôles.
@@ -81,7 +76,8 @@ public class GlowObjectRaycasted : NetworkBehaviour
 				timer += Time.deltaTime;
 				if (!outline.enabled)
 					outline.enabled = true;
-				outline.SetOpacity(timer / 2);
+				outline.SetOpacity(timer / 10);
+				DataFeedbacks.Instance.AddFeedbackLog(3, $"Feedback regard actif avec opacité : {timer/10}, sur objet : {currentGameObject.name}");
 			}
 			else
 			{
@@ -94,6 +90,7 @@ public class GlowObjectRaycasted : NetworkBehaviour
 			{
 				currentOutline.SetOpacity(0);
 				currentOutline.enabled = false;
+				DataFeedbacks.Instance.AddFeedbackLog(3, "Feedback regard inactif.");
 			}
 			
 			if (tmpGameObject != null)

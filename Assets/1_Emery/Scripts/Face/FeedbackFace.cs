@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
 
 public class FeedbackFace : MonoBehaviour
 {
+	[Header("Variables")]
 	[Tooltip("Time range to evaluate the affect.")]
 	[SerializeField]
 	float evaluationTime = 10f;
@@ -68,6 +68,7 @@ public class FeedbackFace : MonoBehaviour
 				feedbackImage.GetComponent<Image>().color.g,
 				feedbackImage.GetComponent<Image>().color.b, 
 				t);
+			DataFeedbacks.Instance.AddFeedbackLog(2, $"Ratio : {t}");
 			float tmpCpt = cpt;
 			float tmpLastMinuteCount = lastMinute.Count;
 			if (tmpCpt / tmpLastMinuteCount >= faceThreshold)

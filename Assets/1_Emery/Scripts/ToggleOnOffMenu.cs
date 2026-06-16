@@ -8,6 +8,8 @@ public class ToggleOnOffMenu : MonoBehaviour
 	[SerializeField]
 	private GameObject menu;
 	[SerializeField]
+	private GameObject bimInteractionMenu;
+	[SerializeField]
 	private InputActionReference toggleMenuInput;
 
 	private bool hasBeenPressedLately = false;
@@ -18,6 +20,7 @@ public class ToggleOnOffMenu : MonoBehaviour
 		{
 			hasBeenPressedLately = true;
 			menu.SetActive(!menu.activeSelf);
+			bimInteractionMenu.SetActive(menu.activeSelf);
 			StartCoroutine(ResetHasBeenPressedLately());
 		}
 	}

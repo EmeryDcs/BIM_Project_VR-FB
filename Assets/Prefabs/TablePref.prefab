@@ -105,7 +105,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -125,6 +125,7 @@ GameObject:
   - component: {fileID: 202408707863877430}
   - component: {fileID: 3676853011871525406}
   - component: {fileID: 6142964108038588354}
+  - component: {fileID: 7131929045686126063}
   m_Layer: 19
   m_Name: TablePref
   m_TagString: Interactable
@@ -251,7 +252,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -277,3 +278,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 9.65, y: 7.45, z: 9.495762}
   m_Center: {x: -6.74, y: 4, z: 4.7500362}
+--- !u!114 &7131929045686126063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6548133584592920561}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a033abbdc51d6147bd8c9c8861642c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 10
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []

@@ -48,7 +48,7 @@ public class GroupFaceFeedback : NetworkBehaviour
 			if (!feedbackGroupImage.activeSelf)
 			{
 				feedbackGroupImage.SetActive(true);
-				if (announcementFeedback != null)
+				if (announcementFeedback != null && !announcementFeedback.isPlaying)
 				{
 					announcementFeedback.Play();
 				}
@@ -59,8 +59,10 @@ public class GroupFaceFeedback : NetworkBehaviour
 
 	private IEnumerator DisableFeedbackGroupImage()
 	{
+		DataFeedbacks.Instance.AddFeedbackLog(5, "Feedback displayed for all roles.");
 		yield return new WaitForSeconds(timerBeforeDisablingFeedback);
 		feedbackGroupImage.SetActive(false);
+		DataFeedbacks.Instance.AddFeedbackLog(5, "Feedback hidden after timer.");
 	}
 
 	/// <summary>

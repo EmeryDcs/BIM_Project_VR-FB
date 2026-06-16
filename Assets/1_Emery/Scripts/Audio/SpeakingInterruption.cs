@@ -1,7 +1,9 @@
 using Fusion;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class SpeakingInterruption : NetworkBehaviour
 {
@@ -15,9 +17,28 @@ public class SpeakingInterruption : NetworkBehaviour
 	[SerializeField]
 	private float noPauseTiming = 0.5f;
 
-	[Tooltip("0 = Lecteur, 1 = Calculateur, 2 = Modélisateur.")]
-	private DetectSpeaking[] isSpeakingArray = new DetectSpeaking[3];
-	
+	[SerializeField]
+	[Networked]
+	private NetworkObject text { get; set; }
+	[Networked, Capacity(128)]
+	private string stringToDisplay { get; set; } = "";
+	[SerializeField]
+	private AudioSource announcementFeedback;
+
+	[Tooltip("Booléen pour chaque prise de parole")]
+	[Networked]
+	private bool isLecteurSpeaking { get; set; }
+	[Networked]
+	private bool isCalculateurSpeaking { get; set; }
+	[Networked]
+	private bool isModelisateurSpeaking { get; set; }
+	private bool[] isSpeakingThisFrame = new bool[3] {false, false, false};
+	[Networked]
+	private bool isShowingFeedback { get; set; } = false;
+
+	[Networked]
+	private int hasJustInterrupted { get; set; } = -1;
+
 	// Permet de tracker le temps de silence de chaque joueur pour tolérer les pauses
 	private float[] silenceTimers = new float[] { 999f, 999f, 999f }; // Initialisé grand pour éviter un faux positif au lancement
 	
@@ -27,28 +48,61 @@ public class SpeakingInterruption : NetworkBehaviour
 	// Garde en mémoire ceux qui ont commencé à parler *pendant* que l'orateur parlait
 	private HashSet<int> interrupters = new HashSet<int>();
 
-	public void AffectSpeakerToTab(int index, DetectSpeaking script)
+	private void Awake()
 	{
-		isSpeakingArray[index] = script;
+		announcementFeedback = GetComponent<AudioSource>();
 	}
 
-	public bool IsSpeakingSetInTab(int index)
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_SetIsSpeaking(int index, bool isSpeaking)
 	{
-		return isSpeakingArray[index] != null;
+		switch (index)
+		{
+			case 0:
+				isLecteurSpeaking = isSpeaking;
+				break;
+			case 1:
+				isCalculateurSpeaking = isSpeaking;
+				break;
+			case 2:
+				isModelisateurSpeaking = isSpeaking;
+				break;
+		}
+	}
+
+	public void SetIsSpeaking(int index, bool isSpeaking)
+	{
+		// Au lieu de modifier la variable localement, on demande au serveur de le faire via RPC
+		RPC_SetIsSpeaking(index, isSpeaking);
 	}
 
 	public override void Render()
 	{
 		if (!Runner.IsRunning) return;
+		if (text != null)
+		{
+			text.GetComponent<TextMeshProUGUI>().text = stringToDisplay;
+			text.gameObject.SetActive(isShowingFeedback);
+		}
+	}
+
+	public override void FixedUpdateNetwork()
+	{
+		if (!Runner.IsRunning) return;
+
+		if (!HasStateAuthority)
+			return;
+
+		isSpeakingThisFrame = new bool[] { isLecteurSpeaking, isCalculateurSpeaking, isModelisateurSpeaking };	
 
 		// 1. Récupérer l'état actuel de tous les interlocuteurs avec la tolérance de silence
 		HashSet<int> speakingThisFrame = new HashSet<int>();
-		for (int i = 0; i < isSpeakingArray.Length; i++)
+		for (int i = 0; i < isSpeakingThisFrame.Length; i++)
 		{
-			if (isSpeakingArray[i] == null)
+			if (!isSpeakingThisFrame[i])
 				continue;
 
-			if (isSpeakingArray[i].GetIsSpeaking())
+			if (isSpeakingThisFrame[i])
 			{
 				silenceTimers[i] = 0f; // Il parle, on reset le timer de silence
 				speakingThisFrame.Add(i);
@@ -102,13 +156,9 @@ public class SpeakingInterruption : NetworkBehaviour
 						foreach(int interrupter in interrupters) 
 						{
 							whoTookTheFloor = interrupter;
+							hasJustInterrupted = whoTookTheFloor;
 							break; // On sélectionne le premier interrupteur valide
 						}
-
-						// ---> C'EST ICI QUE TU ENVOIES TON FEEDBACK <---
-						Debug.Log($"[FEEDBACK] Le joueur {whoTookTheFloor} a coupé la parole au joueur {player} !");
-						isSpeakingArray[whoTookTheFloor].ShowFeedback(); // Affiche le feedback visuel sur le joueur qui a coupé la parole
-						// évolution vers -> int incrémental qui évalue cb de fois le mec à couper la parole, et feedback envoyé si x fois
 
 						// Le "voleur de parole" devient le nouvel orateur principal
 						currentSpeaker = whoTookTheFloor;
@@ -140,6 +190,40 @@ public class SpeakingInterruption : NetworkBehaviour
 		speakingLastFrame = speakingThisFrame;
 	}
 
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_ShowFeedbackInterruptionToAll(int index)
+	{
+		string name = "";
+		switch (index)
+		{
+			case 0:
+				name = "Lecteur";
+				break;
+			case 1:
+				name = "Calculateur";
+				break;
+			case 2:
+				name = "Modélisateur";
+				break;
+		}
+		stringToDisplay = $"Attention {name}, \nvous coupez trop la parole !";
+		//text.gameObject.SetActive(true);
+		isShowingFeedback = true;
+		if (announcementFeedback != null && !announcementFeedback.isPlaying)
+		{
+			announcementFeedback.Play();
+		}
+		StartCoroutine(DisableFeedback());
+	}
+
+	private IEnumerator DisableFeedback()
+	{
+		yield return new WaitForSeconds(10f);
+		stringToDisplay = "";
+		isShowingFeedback = false;
+		//text.gameObject.SetActive(false);
+	}
+
 	public override void Spawned()
 	{
 		Debug.Log("[Emery] SpeakingInterruption properly Spawned via Fusion.");
@@ -154,5 +238,21 @@ public class SpeakingInterruption : NetworkBehaviour
 			// Si un autre existe déjà en scène, on retire silencieusement celui-ci du réseau
 			Runner.Despawn(Object);
 		}
+	}
+
+	public int GetLastInterrupter()
+	{
+		return hasJustInterrupted;
+	}
+
+	public void ResetLastInterrupter()
+	{
+		RPC_ResetLastInterrupter();
+	}
+
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_ResetLastInterrupter()
+	{
+		hasJustInterrupted = -1;
 	}
 }

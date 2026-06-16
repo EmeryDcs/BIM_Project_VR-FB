@@ -22,7 +22,8 @@ public class ShowPersonalisedMenu : MonoBehaviour
 
                 item.SetActive(true);
                 if (item.name == "Arreter l'enregistrement")
-                    item.SetActive(false);
+                    Debug.Log("[Emery] Lecteur, tu n'as pas le droit de voir cet item, je vais le cacher pour toi.");
+                //    item.SetActive(false);
                 
             }
         }
