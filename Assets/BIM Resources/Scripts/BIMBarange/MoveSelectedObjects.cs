@@ -11,7 +11,6 @@ public class MoveSelectedObjects : Fusion.NetworkBehaviour
    
     private List<GameObject> selectedObjects;// = new List<GameObject>(); // List of selected objects
   
-    private XRIBIMInputActions playerInputActions;
     private ObjectInteractionHandler objectInteractionHandler;
  
     private void Start()
@@ -22,14 +21,11 @@ public class MoveSelectedObjects : Fusion.NetworkBehaviour
     {
         selectedObjects = ObjectInteractionHandler.Instance.SelectedObjects();
         objectInteractionHandler = ObjectInteractionHandler.Instance;
-        playerInputActions = objectInteractionHandler.playerInputActions;
-        playerInputActions.XRIRightInteraction.Enable();
-
+      
     }
     private void OnEnable()
     {
-        playerInputActions.XRIRightInteraction.Enable();
-    }
+      }
     private void OnDisable()
     {
 
@@ -46,7 +42,8 @@ public class MoveSelectedObjects : Fusion.NetworkBehaviour
 
     void MoveObjects()
     {
-        Vector2 joystickInput = playerInputActions.XRIRightInteraction.Move.ReadValue<Vector2>();
+       
+        Vector2 joystickInput = OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick);
         Vector3 moveDirection = new Vector3(joystickInput.x, 0, joystickInput.y) * moveSpeed * Time.deltaTime;
 
         foreach (GameObject obj in selectedObjects)
@@ -80,75 +77,7 @@ public class MoveSelectedObjects : Fusion.NetworkBehaviour
     }
 
 
-    void MoveObjects1()
-    {
 
-        Vector2 joystickInput = playerInputActions.XRIRightInteraction.Move.ReadValue<Vector2>();
-
-        Vector3 moveDirection = new Vector3(joystickInput.x, 0, joystickInput.y) * moveSpeed * Time.deltaTime;
-
-        foreach (GameObject obj in selectedObjects)
-        {
-            if (obj != null)
-            {
-                NetworkObject networkObj = obj.GetComponent<NetworkObject>();
-                if (networkObj.HasStateAuthority)
-                {
-                    Vector3 direcion = cameraTransform.TransformDirection(new Vector3(moveDirection.x, 0, moveDirection.z));
-                    direcion.y = 0;
-                    networkObj.transform.position += direcion;
-                    Debug.Log(" Move Direction x " + direcion.x + "  z :  " + direcion.z);
-
-                    /*  NetworkCharacterController networkCharacterController = obj.GetComponent<NetworkCharacterController>();
-                       if (networkCharacterController != null)
-                       {
-                           networkCharacterController.Move(moveDirection);
-                       }*/
-                }
-
-
-
-                // Constrain movement to X and Z directions
-
-
-                // Vector3 direcion  =  cameraTransform.TransformDirection(new Vector3(moveDirection.x, 0, moveDirection.z));
-                //direcion.y = 0;
-                //  obj.transform.position += direcion;
-
-
-                // UpdateBoundingBox(obj);
-            }
-        }
-    }
-
-    private NetworkObject controlledObject; // Reference to the spawned object
-    bool IsSpawned = true;
-
-
-    private void HandleInput()
-    {
-        // Move the controlled object if it exists
-        if (controlledObject != null && controlledObject.HasStateAuthority)
-        {
-            MoveControlledObject();
-        }
-    }
-
-    private void MoveControlledObject()
-    {
-        // Get input from keyboard or joystick
-        float moveX = Input.GetAxis("Horizontal");
-        float moveZ = Input.GetAxis("Vertical");
-
-        Vector3 moveDirection = new Vector3(moveX, 0, moveZ).normalized * moveSpeed * Time.deltaTime;
-
-        if (moveDirection != Vector3.zero)
-        {
-            // Update position
-            controlledObject.transform.position += moveDirection;
-            Debug.Log($"Moving object to: {controlledObject.transform.position}");
-        }
-    }
 }
 
 

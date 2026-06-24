@@ -50,7 +50,8 @@ public class EyeTrackingDataLogger : MonoBehaviour
     {
         if (isRecording && eyeTrackingRay != null && eyeTrackingRay.TryGetRayHit(out RaycastHit hit))
         {
-            writer.WriteLine($"{Time.time};{eyeTrackingRay.transform.position.x};{eyeTrackingRay.transform.position.y};{eyeTrackingRay.transform.position.z};" +
+            Transform camera = Camera.main.transform;
+			writer.WriteLine($"{Time.time};{camera.transform.position.x};{camera.transform.position.y};{camera.transform.position.z};" +
                                 $"{hit.point.x};{hit.point.y};{hit.point.z};{hit.transform.name}");
         }
     }

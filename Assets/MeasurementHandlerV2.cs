@@ -9,7 +9,7 @@ public class MeasurementHandlerV2 : NetworkBehaviour
 {
     private MeasurementHandlerV2 instance = null;
     public Material lineMaterial;
-    public XRIBIMInputActions playerInputActions;
+    public XRIBIMInputActions playerInputActions ;
     private PlayerInput playerInput;
 
     public GameObject measurePref;

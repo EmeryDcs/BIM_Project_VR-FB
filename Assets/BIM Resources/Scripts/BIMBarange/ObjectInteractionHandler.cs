@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 public class ObjectInteractionHandler : NetworkBehaviour
 {
-    public XRIBIMInputActions playerInputActions;
+   
     public Transform cameraTransform; // Player's camera transform
     private static ObjectInteractionHandler _instance;
     public float spawnDistance = 2.0f; // Distance at which the object spawns
@@ -50,8 +50,7 @@ public class ObjectInteractionHandler : NetworkBehaviour
 
         _instance = this;
         DontDestroyOnLoad(gameObject); // Optional: keep the instance across scenes
-        playerInputActions = new XRIBIMInputActions();
-    }
+     }
     public List<GameObject> SelectedObjects()
     {
         return selectedObjects;
@@ -96,7 +95,7 @@ public class ObjectInteractionHandler : NetworkBehaviour
     {
         if (!selectedObjects.Contains(hitObject))
         {
-            objectOutliner.EnableOutLine(hitObject.transform);
+            //objectOutliner.EnableOutLine(hitObject.transform);
             //HighlightObject(hitObject);
             CreateBoundingBox(hitObject);
             selectedObjects.Add(hitObject);
@@ -175,7 +174,7 @@ public class ObjectInteractionHandler : NetworkBehaviour
     {
         List<GameObject> objectsToBeDeleted = new List<GameObject>(); // List of copied objects
         RemoveBoundingBoxes();
-        RemoveOutLines();
+        //RemoveOutLines();
         foreach (GameObject obj in selectedObjects)
         {
             if (obj != null) // Check if the GameObject is not null
@@ -207,7 +206,7 @@ public class ObjectInteractionHandler : NetworkBehaviour
         {
             if (obj != null)
             {
-                objectOutliner.DisableOutLine(obj.transform);   
+                objectOutliner.DisableOutLine(obj.transform);
             }
         }
         //clear list

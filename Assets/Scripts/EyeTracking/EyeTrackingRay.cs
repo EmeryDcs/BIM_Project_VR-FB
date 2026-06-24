@@ -34,13 +34,15 @@ public class EyeTrackingRay : MonoBehaviour
     private Dictionary<int, EyeInteractable> interactables = new Dictionary<int, EyeInteractable>();
 
     private EyeInteractable lastEyeInteractable;
+    private Camera mainCamera;
 
-    private void Start()
+    private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
         allowPinchSelection = handUsedForPinchSelection != null;
         SetupRay();
-    }
+        mainCamera = Camera.main;
+	}
 
     private void SetupRay()
     {
@@ -50,10 +52,8 @@ public class EyeTrackingRay : MonoBehaviour
         lineRenderer.endWidth = rayWidth;
         lineRenderer.startColor = rayColorDefaultState;
         lineRenderer.endColor = rayColorDefaultState;
-        
-        // CORRECTION : L'origine est (0,0,0) en espace local.
-        lineRenderer.SetPosition(0, Vector3.zero);
-        lineRenderer.SetPosition(1, Vector3.forward * rayDistance);
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, new Vector3(transform.position.x, transform.position.y, transform.position.z + rayDistance));
     }
 
     private void Update()
@@ -66,11 +66,8 @@ public class EyeTrackingRay : MonoBehaviour
         if (!intercepting)
         {
             lineRenderer.startColor = lineRenderer.endColor = rayColorDefaultState;
-            
-            // CORRECTION : Réinitialisation simple en espace local.
-            lineRenderer.SetPosition(0, Vector3.zero);
-            lineRenderer.SetPosition(1, Vector3.forward * rayDistance);
-            
+			lineRenderer.SetPosition(0, mainCamera.transform.position);
+			lineRenderer.SetPosition(1, new Vector3(0, 0, transform.position.z + rayDistance));
             HoverEnded();
         }
     }
@@ -95,7 +92,7 @@ public class EyeTrackingRay : MonoBehaviour
         Vector3 rayDirection = transform.TransformDirection(Vector3.forward) * rayDistance;
 
         // Check if eye ray intersects with any objects included in the layersToInclude
-        intercepting = Physics.Raycast(transform.position, rayDirection, out RaycastHit hit, Mathf.Infinity, layersToInclude);
+        intercepting = Physics.Raycast(mainCamera.transform.position, rayDirection, out RaycastHit hit, Mathf.Infinity, layersToInclude);
 
         if (intercepting)
         {
@@ -109,7 +106,9 @@ public class EyeTrackingRay : MonoBehaviour
                 if (eyeInteractable != null)  // Vérifie si l'objet interactable existe
                 {
                     var toLocalSpace = transform.InverseTransformPoint(eyeInteractable.transform.position);
-                    lineRenderer.SetPosition(1, new Vector3(0, 0, toLocalSpace.z));
+
+					lineRenderer.SetPosition(0, mainCamera.transform.position);
+					lineRenderer.SetPosition(1, new Vector3(0, 0, toLocalSpace.z));
 
                     // hover started
                     eyeInteractable.Hover(true);
@@ -152,7 +151,7 @@ public class EyeTrackingRay : MonoBehaviour
     public bool TryGetRayHit(out RaycastHit hit)
     {
         Vector3 rayDirection = transform.TransformDirection(Vector3.forward) * rayDistance;
-        return Physics.Raycast(transform.position, rayDirection, out hit, Mathf.Infinity, layersToInclude);
+        return Physics.Raycast(mainCamera.transform.position, rayDirection, out hit, Mathf.Infinity);
     }
 
 }

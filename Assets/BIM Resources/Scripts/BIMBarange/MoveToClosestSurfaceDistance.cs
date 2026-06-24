@@ -37,7 +37,6 @@ public class MoveToClosestSurfaceDistance : MonoBehaviour
     public TMP_InputField inputField;
 
     private List<GameObject> selectedObjects;// = new List<GameObject>(); // List of selected objects
-    private XRIBIMInputActions playerInputActions;
     private ObjectInteractionHandler objectInteractionHandler;
 
 
@@ -56,23 +55,17 @@ public class MoveToClosestSurfaceDistance : MonoBehaviour
     private void Awake()
     {
         objectInteractionHandler = ObjectInteractionHandler.Instance;
-        playerInputActions = objectInteractionHandler.playerInputActions;
-        playerInputActions.XRIRightInteraction.Enable();
+        
 
     }
 
     private void OnEnable()
     {
-        playerInputActions.XRIRightInteraction.Enable();
        
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Activate.performed += MoveToSurfaceDistance;
-
     }
     private void OnDisable()
     {
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Activate.performed -= MoveToSurfaceDistance;
+      
         if(lineObj != null)
         {
             Destroy(lineObj);
@@ -88,9 +81,19 @@ public class MoveToClosestSurfaceDistance : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+        {
+            Debug.Log("intex key pressed");
+            DrawTengentLine();
+        }
+
+    
+
+
+
         if (lineObj != null)
         {
-            if (playerInputActions.XRIRightInteraction.ActivateValue.ReadValue<float>() > 0.3)
+            if (OVRInput.Get(OVRInput.Button.SecondaryIndexTrigger))
             {            // Get the controller's position and orientation
                 Vector3 controllerPosition = controller.position;
                 Quaternion controllerRotation = controller.rotation;
@@ -367,45 +370,7 @@ public class MoveToClosestSurfaceDistance : MonoBehaviour
         }
 
     }
-    public void Update1()
-    {
-        if (playerInputActions.XRIRightInteraction.Select.ReadValue<float>() > 0.3)
-        {
-            Vector3 controllerPosition = controller.position;
-            Quaternion controllerRotation = controller.rotation;
-            Vector3 rayDirection = controllerRotation * Vector3.forward;
-
-            // Raycast logic
-            Ray ray = new Ray(controllerPosition, rayDirection);
-            RaycastHit hit;
-            // Perform the raycast
-            if (Physics.Raycast(ray, out hit, raycastMaxDistance))
-            {
-                foreach (GameObject obj in selectedObjects)
-                {
-                    MoveToShortestDistanceFromPlane(hit, obj);  
-                  // MoveToClosestSurface(hit, obj);
-                }
-            }
-        }
-
-
-
-
-            if (Input.GetMouseButtonDown(0))
-        {
-            // Perform the raycast
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, raycastMaxDistance, raycastLayerMask))
-            {
-
-                    MoveToClosestSurface(hit);
-
-            }
-        }
-
-    }
-
-  
+   
 
 
     void MoveToClosestSurface(RaycastHit hit)

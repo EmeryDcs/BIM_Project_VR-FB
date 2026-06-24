@@ -4,7 +4,7 @@ using Fusion;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.InputSystem;
-public class MoveObjectRaycast : NetworkBehaviour
+public class MoveObjectRaycastA : NetworkBehaviour
 {
     private XRIBIMInputActions playerInputActions;
     private ObjectInteractionHandler objectInteractionHandler;
@@ -17,7 +17,7 @@ public class MoveObjectRaycast : NetworkBehaviour
     private void Awake()
     {
         objectInteractionHandler = ObjectInteractionHandler.Instance;
-        playerInputActions = objectInteractionHandler.playerInputActions;
+       // playerInputActions = objectInteractionHandler.playerInputActions;
         playerInputActions.XRIRightInteraction.Enable();
         selectedObjects = ObjectInteractionHandler.Instance.SelectedObjects();
     }

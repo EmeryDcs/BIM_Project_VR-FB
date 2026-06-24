@@ -6,23 +6,32 @@ public class GroupFaceFeedback : NetworkBehaviour
 {
 	public static GroupFaceFeedback Instance { get; private set; }
 
+	[Networked]
 	[SerializeField]
-	private GameObject feedbackGroupImage;
+	private NetworkObject feedbackGroupImage { get; set; }
 	[SerializeField]
 	private float timerBeforeDisablingFeedback = 5f;
 	[SerializeField]
-	private AudioSource announcementFeedback;
+	private AudioSource announcementFeedback { get; set; }
 
-	private bool isLecteurFocused = true;
-	private bool isCalculateurFocused = true;
-	private bool isModelisateurFocused = true;
+	[Networked]
+	private bool isLecteurFocused { get; set; } = true;
+	[Networked]
+	private bool isCalculateurFocused { get; set; } = true;
+	[Networked]
+	private bool isModelisateurFocused { get; set; } = true;
+	[Networked]
+	private bool hasAlreadyShowFeedback { get; set; } = false;
+	[Networked]
+	private bool isGameStarted { get; set; } = false;
 
 	private void Awake()
 	{
 		announcementFeedback = GetComponent<AudioSource>();
 	}
 
-	public void SetFocus(int roleIndex, bool isFocused)
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_SetFocus(int roleIndex, bool isFocused)
 	{
 		switch (roleIndex)
 		{
@@ -41,19 +50,37 @@ public class GroupFaceFeedback : NetworkBehaviour
 		}
 	}
 
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_StartGame()
+	{
+		if (Object == null || !Object.IsValid)
+		{
+			Debug.LogWarning("[Emery] Tentative d'envoi ignorée : L'entité réseau n'est pas encore prête.");
+			return;
+		}
+		isGameStarted = true;
+	}
+
 	public override void Render()
 	{
-		if (!isCalculateurFocused && !isLecteurFocused && !isModelisateurFocused)
+		if (!isGameStarted) return;
+
+		if (!isCalculateurFocused && !isLecteurFocused && !isModelisateurFocused && !hasAlreadyShowFeedback)
 		{
-			if (!feedbackGroupImage.activeSelf)
+			if (!feedbackGroupImage.gameObject.activeSelf)
 			{
-				feedbackGroupImage.SetActive(true);
+				feedbackGroupImage.gameObject.SetActive(true);
 				if (announcementFeedback != null && !announcementFeedback.isPlaying)
 				{
 					announcementFeedback.Play();
 				}
+				hasAlreadyShowFeedback = true;
 				StartCoroutine(DisableFeedbackGroupImage());
 			}
+		}
+		else if (isCalculateurFocused || isLecteurFocused || isModelisateurFocused)
+		{
+			hasAlreadyShowFeedback = false;
 		}
 	}
 
@@ -61,7 +88,7 @@ public class GroupFaceFeedback : NetworkBehaviour
 	{
 		DataFeedbacks.Instance.AddFeedbackLog(5, "Feedback displayed for all roles.");
 		yield return new WaitForSeconds(timerBeforeDisablingFeedback);
-		feedbackGroupImage.SetActive(false);
+		feedbackGroupImage.gameObject.SetActive(false);
 		DataFeedbacks.Instance.AddFeedbackLog(5, "Feedback hidden after timer.");
 	}
 

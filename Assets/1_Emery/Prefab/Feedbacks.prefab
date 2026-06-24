@@ -341,7 +341,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "N'h\xE9sitez pas \xE0 relire \nvos informations si \nvous \xEAtes perdus."
+  m_text: "N'h\xE9sitez pas \xE0 relire \nvos informations."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -493,9 +493,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f01e6a7ccf548fa4d8d65408a1e65fe1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  feedbackGroupImage: {fileID: 2662060346136535220}
+  _feedbackGroupImage: {fileID: 5948721377003357921}
   timerBeforeDisablingFeedback: 5
-  announcementFeedback: {fileID: 0}
 --- !u!114 &2239327231349232417
 MonoBehaviour:
   m_ObjectHideFlags: 0

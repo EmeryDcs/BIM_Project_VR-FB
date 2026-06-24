@@ -74,7 +74,7 @@ public class FeedbackFace : MonoBehaviour
 			if (tmpCpt / tmpLastMinuteCount >= faceThreshold)
 			{
 				hasBeenFocusedInLastElapsedTime = true;
-				GroupFaceFeedback.Instance.SetFocus(index, hasBeenFocusedInLastElapsedTime);
+				GroupFaceFeedback.Instance.RPC_SetFocus(index, hasBeenFocusedInLastElapsedTime);
 				timerFocusInLastElapsedTime = 0f;
 				//feedbackImage.SetActive(true);
 			}
@@ -85,7 +85,7 @@ public class FeedbackFace : MonoBehaviour
 				if (timerFocusInLastElapsedTime >= evaluationTime)
 				{
 					hasBeenFocusedInLastElapsedTime = false;
-					GroupFaceFeedback.Instance.SetFocus(index, hasBeenFocusedInLastElapsedTime);
+					GroupFaceFeedback.Instance.RPC_SetFocus(index, hasBeenFocusedInLastElapsedTime);
 					//feedbackImage.SetActive(false);
 				}
 			}

@@ -32,12 +32,31 @@ public class SpeakingInterruption : NetworkBehaviour
 	private bool isCalculateurSpeaking { get; set; }
 	[Networked]
 	private bool isModelisateurSpeaking { get; set; }
-	private bool[] isSpeakingThisFrame = new bool[3] {false, false, false};
+	private bool[] isSpeakingThisFrame = new bool[3] { false, false, false };
+
+	[Tooltip("Booléen pour chaque temps de pause entre parole")]
+	[Networked]
+	private bool isLecteurPausing { get; set; }
+	[Networked]
+	private bool isCalculateurPausing { get; set; }
+	[Networked]
+	private bool isModelisateurPausing { get; set; }
+	private bool[] isPausingThisFrame = new bool[3] { false, false, false };
+
 	[Networked]
 	private bool isShowingFeedback { get; set; } = false;
 
 	[Networked]
 	private int hasJustInterrupted { get; set; } = -1;
+
+	[Networked]
+	private int hasTriedToInterrupt { get; set; } = -1;
+
+	[Networked]
+	private bool annoucementFeedbackNeedToPlay { get; set; } = false;
+
+	[Networked]
+	private bool isGameStarted { get; set; } = false;
 
 	// Permet de tracker le temps de silence de chaque joueur pour tolérer les pauses
 	private float[] silenceTimers = new float[] { 999f, 999f, 999f }; // Initialisé grand pour éviter un faux positif au lancement
@@ -76,6 +95,17 @@ public class SpeakingInterruption : NetworkBehaviour
 		RPC_SetIsSpeaking(index, isSpeaking);
 	}
 
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_StartGame()
+	{
+		if (Object == null || !Object.IsValid)
+		{
+			Debug.LogWarning("[Emery] Tentative d'envoi ignorée : L'entité réseau n'est pas encore prête.");
+			return;
+		}
+		isGameStarted = true;
+	}
+
 	public override void Render()
 	{
 		if (!Runner.IsRunning) return;
@@ -84,16 +114,25 @@ public class SpeakingInterruption : NetworkBehaviour
 			text.GetComponent<TextMeshProUGUI>().text = stringToDisplay;
 			text.gameObject.SetActive(isShowingFeedback);
 		}
+
+		if (annoucementFeedbackNeedToPlay)
+		{
+			if (announcementFeedback != null && !announcementFeedback.isPlaying)
+			{
+				announcementFeedback.Play();
+				annoucementFeedbackNeedToPlay = false;
+			}
+		}
 	}
 
 	public override void FixedUpdateNetwork()
 	{
+		if (!isGameStarted) return;
 		if (!Runner.IsRunning) return;
-
-		if (!HasStateAuthority)
-			return;
+		if (!HasStateAuthority) return;
 
 		isSpeakingThisFrame = new bool[] { isLecteurSpeaking, isCalculateurSpeaking, isModelisateurSpeaking };	
+		isPausingThisFrame = new bool[] { isLecteurPausing, isCalculateurPausing, isModelisateurPausing };
 
 		// 1. Récupérer l'état actuel de tous les interlocuteurs avec la tolérance de silence
 		HashSet<int> speakingThisFrame = new HashSet<int>();
@@ -132,7 +171,9 @@ public class SpeakingInterruption : NetworkBehaviour
 				// Quelqu'un parlait déjà -> Ce joueur essaie d'interrompre
 				else
 				{
-					interrupters.Add(player);
+					//Sauf si on considère que le joueur est en pause, auquel cas il n'interrompt pas vraiment
+					if (!isPausingThisFrame[currentSpeaker])
+						interrupters.Add(player);
 				}
 			}
 		}
@@ -156,7 +197,9 @@ public class SpeakingInterruption : NetworkBehaviour
 						foreach(int interrupter in interrupters) 
 						{
 							whoTookTheFloor = interrupter;
+
 							hasJustInterrupted = whoTookTheFloor;
+
 							break; // On sélectionne le premier interrupteur valide
 						}
 
@@ -173,6 +216,7 @@ public class SpeakingInterruption : NetworkBehaviour
 				else
 				{
 					// Un interrupteur s'est tu avant que l'orateur principal s'arrête (tentative ratée)
+					hasTriedToInterrupt = player;
 					interrupters.Remove(player);
 				}
 			}
@@ -191,7 +235,7 @@ public class SpeakingInterruption : NetworkBehaviour
 	}
 
 	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-	public void RPC_ShowFeedbackInterruptionToAll(int index)
+	public void RPC_ShowFeedbackInterruptionToAll(int index, int numberOfSucceededInterruption)
 	{
 		string name = "";
 		switch (index)
@@ -206,13 +250,10 @@ public class SpeakingInterruption : NetworkBehaviour
 				name = "Modélisateur";
 				break;
 		}
-		stringToDisplay = $"Attention {name}, \nvous coupez trop la parole !";
+		stringToDisplay = $"Attention {name}, \nvous avez coupé et repris {numberOfSucceededInterruption} fois \nla parole dans la dernière minute.";
 		//text.gameObject.SetActive(true);
 		isShowingFeedback = true;
-		if (announcementFeedback != null && !announcementFeedback.isPlaying)
-		{
-			announcementFeedback.Play();
-		}
+		annoucementFeedbackNeedToPlay = true;
 		StartCoroutine(DisableFeedback());
 	}
 
@@ -245,6 +286,17 @@ public class SpeakingInterruption : NetworkBehaviour
 		return hasJustInterrupted;
 	}
 
+	public int GetLastTriedInterrupter()
+	{
+		return hasTriedToInterrupt;
+	}
+
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_ResetLastTriedInterrupter()
+	{
+		hasTriedToInterrupt = -1;
+	}
+
 	public void ResetLastInterrupter()
 	{
 		RPC_ResetLastInterrupter();
@@ -254,5 +306,22 @@ public class SpeakingInterruption : NetworkBehaviour
 	public void RPC_ResetLastInterrupter()
 	{
 		hasJustInterrupted = -1;
+	}
+
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_SetIsPausing(int index, bool isPausing)
+	{
+		switch (index)
+		{
+			case 0:
+				isLecteurPausing = isPausing;
+				break;
+			case 1:
+				isCalculateurPausing = isPausing;
+				break;
+			case 2:
+				isModelisateurPausing = isPausing;
+				break;
+		}
 	}
 }

@@ -17,6 +17,9 @@ public class GlowObjectRaycasted : NetworkBehaviour
 	[Networked]
 	public NetworkObject modelisateur_GazedObject { get; set; }
 
+	[Networked]
+	public bool isGameStarted { get; set; } = false;
+
 	private NetworkObject currentGameObject = null;
 	private float timer = 0f;
 
@@ -47,11 +50,25 @@ public class GlowObjectRaycasted : NetworkBehaviour
 		}
 	}
 
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void RPC_StartGame()
+	{
+		if (Object == null || !Object.IsValid)
+		{
+			Debug.LogWarning("[Emery] Tentative d'envoi ignorée : L'entité réseau n'est pas encore prête.");
+			return;
+		}
+		isGameStarted = true;
+	}
+
 	/// <summary>
 	/// Tour de boucles.
 	/// </summary>
 	public override void Render()
 	{
+		if (!isGameStarted)
+			return;
+
 		if (Object == null || !Object.IsValid)
 		{
 			Debug.Log("[Emery] Update skipped : L'entité réseau n'est pas encore prête : " + Object);
@@ -73,6 +90,15 @@ public class GlowObjectRaycasted : NetworkBehaviour
 		{
 			if (currentGameObject.TryGetComponent(out QuickOutline outline))
 			{
+				if (calculateur_GazedObject == modelisateur_GazedObject == lecteur_GazedObject)
+				{
+					outline.OutlineColor = Color.blue;
+				}
+				else
+				{
+					outline.OutlineColor = Color.white;
+				}
+
 				timer += Time.deltaTime;
 				if (!outline.enabled)
 					outline.enabled = true;

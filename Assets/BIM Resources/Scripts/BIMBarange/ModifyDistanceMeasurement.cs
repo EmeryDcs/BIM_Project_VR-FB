@@ -18,7 +18,7 @@ public class ModifyDistanceMeasurement : NetworkBehaviour
     public GameObject measurePref;
     public bool isMeasurementActive = true; // Tracks if the measurement tool is active
 
-    private XRIBIMInputActions playerInputActions;
+  //  private XRIBIMInputActions playerInputActions;
     private MeasurementHandlerV2 measurementHandler;
 
 
@@ -51,42 +51,20 @@ public class ModifyDistanceMeasurement : NetworkBehaviour
     private void Awake()
     {
         measurementHandler = MeasurementHandlerV2.Instance;
-        playerInputActions = measurementHandler.playerInputActions;
-        playerInputActions.XRIRightInteraction.Enable();
-        playerInputActions.XRILeftInteraction.Enable(); 
-
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Select.performed += DrawLine_performed;
-        playerInputActions.XRIRightInteraction.Select.canceled += DrawLine_endDrawing;
-
-        playerInputActions.XRILeftInteraction.Delete.performed += DeleteLastLine_performed;
-
+    
     }
     private void OnEnable()
     {
         measurementHandler = MeasurementHandlerV2.Instance;
-        playerInputActions = measurementHandler.playerInputActions;
-        playerInputActions.XRIRightInteraction.Enable();
-        playerInputActions.XRILeftInteraction.Enable();
-
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Select.performed += DrawLine_performed;
-        playerInputActions.XRIRightInteraction.Select.canceled += DrawLine_endDrawing;
-
-        playerInputActions.XRILeftInteraction.Delete.performed += DeleteLastLine_performed;
-
+      
     }
     private void OnDisable()
     {
-        playerInputActions.XRIRightInteraction.Select.performed -= DrawLine_performed;
-        playerInputActions.XRIRightInteraction.Select.canceled -= DrawLine_endDrawing;
-
-        playerInputActions.XRILeftInteraction.Delete.performed -= DeleteLastLine_performed;
-
+     
     }
 
 
-    private void DrawLine_performed(InputAction.CallbackContext context)
+    private void DrawLine_performed()
     {
         Vector3 controllerPosition = controller.position;
         Quaternion controllerRotation = controller.rotation;
@@ -128,14 +106,14 @@ public class ModifyDistanceMeasurement : NetworkBehaviour
             }
         }
     }
-    private void DrawLine_endDrawing(InputAction.CallbackContext context)
+    private void DrawLine_endDrawing()
     {
         if (currentLine != null)
             EndDrawing();
     }
 
 
-    private void DeleteLastLine_performed(InputAction.CallbackContext context)
+    private void DeleteLastLine_performed()
     {
         measurementHandler.DeleteLastLine();
     }
@@ -143,7 +121,23 @@ public class ModifyDistanceMeasurement : NetworkBehaviour
 
     private Transform lastLine;
     void Update()
-    {
+    { 
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryHandTrigger))
+        {
+            Debug.Log("intex key pressed");
+            DrawLine_performed();
+        }
+        // Deselect
+        else if (OVRInput.GetUp(OVRInput.Button.SecondaryHandTrigger))
+        {
+            Debug.Log("intex key removed");
+            DrawLine_endDrawing();
+        }
+    
+        // Get right-hand trigger value (0.0f to 1.0f)
+        // Read right index trigger (mapped)
+       //  float triggerValue = OVRInput.Get(OVRInput.Button.SecondaryHandTrigger);
+
         if (!isMeasurementActive) return; // Exit if the measurement tool is inactive
 
         // Get the controller's position and orientation
@@ -156,8 +150,9 @@ public class ModifyDistanceMeasurement : NetworkBehaviour
         RaycastHit hit;
 
         // Update the line's endpoint while holding the trigger
-        if (playerInputActions.XRIRightInteraction.Select.ReadValue<float>() > 0.3)
+        if (OVRInput.Get(OVRInput.Button.SecondaryHandTrigger)) // Small threshold to avoid accidental movement
         {
+
             if (Physics.Raycast(ray, out hit))
             {    
                 if(isDrawing || isModifyingEndPoint)
@@ -213,7 +208,7 @@ public class ModifyDistanceMeasurement : NetworkBehaviour
                         spawnedLine = networklineObj.gameObject.GetComponent<NetworkedLine>();
                         spawnedLine.SetLinePositions( currentPoint, currentLine.GetPosition(1), true);
 
-                        string data = (Vector3.Distance(currentLine.GetPosition(0), currentLine.GetPosition(1))).ToString("F2") + " mètre";
+                        string data = (Vector3.Distance(currentLine.GetPosition(0), currentLine.GetPosition(1))).ToString("F2") + " mï¿½tre";
                         spawnedUI.SetUIPositions((currentPoint + currentLine.GetPosition(1)) / 2, data, true);
                     
 
@@ -253,7 +248,7 @@ public class ModifyDistanceMeasurement : NetworkBehaviour
                     spawnedLine.SetLinePositions(currentLine.GetPosition(0), currentPoint, true);
 
 
-                    string data = (Vector3.Distance(currentLine.GetPosition(0), currentLine.GetPosition(1))).ToString("F2") + " mètre";
+                    string data = (Vector3.Distance(currentLine.GetPosition(0), currentLine.GetPosition(1))).ToString("F2") + " mï¿½tre";
                     spawnedUI.SetUIPositions((currentPoint + currentLine.GetPosition(0)) / 2, data, true);
 
                 }
@@ -286,7 +281,7 @@ public class ModifyDistanceMeasurement : NetworkBehaviour
         //increment line count
         measurementHandler.AddLine(currentLine.gameObject);
 
-        string data = (Vector3.Distance(currentLine.GetPosition(0), currentLine.GetPosition(1))).ToString("F2") + " mètre";
+        string data = (Vector3.Distance(currentLine.GetPosition(0), currentLine.GetPosition(1))).ToString("F2") + " mï¿½tre";
         Vector3 tempPos = (currentLine.GetPosition(0) + currentLine.GetPosition(1)) / 2;
         Vector3 newUIPos = new Vector3(tempPos.x, tempPos.y+ uiOffsetY, tempPos.z);    
         spawnedUI.SetUIPositions(newUIPos, data, true);

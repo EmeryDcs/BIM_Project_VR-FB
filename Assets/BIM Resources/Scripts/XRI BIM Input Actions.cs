@@ -2003,7 +2003,7 @@ public partial class @XRIBIMInputActions: IInputActionCollection2, IDisposable
                     ""name"": ""Activate"",
                     ""type"": ""Button"",
                     ""id"": ""41976d89-60de-4deb-bff9-16b4af96b290"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -2385,7 +2385,7 @@ public partial class @XRIBIMInputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""e6725e00-002d-49a2-a898-fb06abeab694"",
-                    ""path"": ""<XRController>{RightHand}/{Primary2DAxis}"",
+                    ""path"": ""<QuestProTouchController>{RightHand}/thumbstick"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

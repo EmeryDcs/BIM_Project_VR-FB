@@ -9,7 +9,7 @@ using Meta.XR.MRUtilityKit;
 
 public class DrawLineBetweenTwoHitsNW : Fusion.NetworkBehaviour
 {
-    private XRIBIMInputActions playerInputActions;
+   // private XRIBIMInputActions playerInputActions;
     private PlayerInput playerInput;
     public Transform cameraRef;
 
@@ -45,36 +45,7 @@ public class DrawLineBetweenTwoHitsNW : Fusion.NetworkBehaviour
 
     private int count = 0;
 
-    private void Awake()
-    {
-        playerInputActions = MeasurementHandler.Instance.playerInputActions;
-        playerInputActions.XRIRightInteraction.Enable();
-
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Select.performed += DrawLine_performed;
-        playerInputActions.XRIRightInteraction.Select.canceled += DrawLine_endDrawing;
-
-        playerInputActions.XRILeftInteraction.Delete.performed += DeleteLastLine_performed;
-    }
-    private void OnEnable()
-    {
-        playerInputActions = MeasurementHandler.Instance.playerInputActions;
-        playerInputActions.XRIRightInteraction.Enable();
-
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Select.performed += DrawLine_performed;
-        playerInputActions.XRIRightInteraction.Select.canceled += DrawLine_endDrawing;
-        playerInputActions.XRILeftInteraction.Delete.performed += DeleteLastLine_performed;
-    }
-    private void OnDisable()
-    {
-        playerInputActions.XRIRightInteraction.Select.performed -= DrawLine_performed;
-        playerInputActions.XRIRightInteraction.Select.canceled -= DrawLine_endDrawing;
-        playerInputActions.XRILeftInteraction.Delete.performed += DeleteLastLine_performed;
-
-    }
-
-    private void DrawLine_performed(InputAction.CallbackContext context)
+    private void DrawLine_performed()
     {
         if (!isDrawing) {
             DrawLine();
@@ -83,7 +54,7 @@ public class DrawLineBetweenTwoHitsNW : Fusion.NetworkBehaviour
 
     }
 
-    private void DrawLine_endDrawing(InputAction.CallbackContext context)
+    private void DrawLine_endDrawing()
     {
         if (isDrawing)
         {
@@ -104,14 +75,31 @@ public class DrawLineBetweenTwoHitsNW : Fusion.NetworkBehaviour
             
         }
     }
-    private void DeleteLastLine_performed(InputAction.CallbackContext context)
+    private void DeleteLastLine_performed()
     {
         MeasurementHandler.Instance.DeleteLastLine();
     }
 
     void Update()
     {
-        if(playerInputActions.XRIRightInteraction.Select.ReadValue<float>()>0.3)
+     if (OVRInput.GetDown(OVRInput.Button.SecondaryHandTrigger))
+        {
+            Debug.Log("intex key pressed");
+            DrawLine_performed();
+        }
+        // Deselect
+        else if (OVRInput.GetUp(OVRInput.Button.SecondaryHandTrigger))
+        {
+            Debug.Log("intex key removed");
+            DrawLine_endDrawing();
+        }
+    
+        // Get right-hand trigger value (0.0f to 1.0f)
+        // Read right index trigger (mapped)
+       //  float triggerValue = OVRInput.Get(OVRInput.Button.SecondaryHandTrigger);
+
+
+        if (OVRInput.Get(OVRInput.Button.SecondaryHandTrigger)) // Small threshold to avoid accidental movement
         {
             if (isDrawing)
             {
@@ -295,7 +283,7 @@ public class DrawLineBetweenTwoHitsNW : Fusion.NetworkBehaviour
                     if (networkTransform != null)
                     {
                         updateLinePosition(firstPoint, secondPoint);
-                        string data = (Vector3.Distance(currentLine.GetPosition(0), currentLine.GetPosition(1))).ToString("F2") + " mètre";
+                        string data = (Vector3.Distance(currentLine.GetPosition(0), currentLine.GetPosition(1))).ToString("F2") + " mï¿½tre";
 
                         spawnedUI.SetUIPositions((firstPoint + secondPoint) / 2, data, true);
 

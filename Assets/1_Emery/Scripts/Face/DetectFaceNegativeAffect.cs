@@ -51,6 +51,7 @@ public class DetectFaceNegativeAffect : MonoBehaviour
 		{
 			OVRFaceExpressions.FaceExpression expression = face_negative_affect[i];
 
+
 			if (expression == OVRFaceExpressions.FaceExpression.Invalid ||
 				expression == OVRFaceExpressions.FaceExpression.Max)
 			{

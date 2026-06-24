@@ -33,7 +33,6 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
 
     public GameObject moveToSurfaceGO;
 
-    private XRIBIMInputActions playerInputActions;
     private ObjectInteractionHandler objectInteractionHandler;
     public Material boundingBoxMaterial; // Optional material for visualizing the bounding box
 
@@ -46,43 +45,15 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
     private void Awake()
     {
         objectInteractionHandler = ObjectInteractionHandler.Instance;
-        playerInputActions = objectInteractionHandler.playerInputActions;
-        playerInputActions.XRIRightInteraction.Enable();
-        playerInputActions.XRILeftInteraction.Enable();
-
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Select.performed += SelectObject_performed;
-     //   playerInputActions.XRIRightInteraction.CopyPaste.performed += CopyPaste_performed;
-     //   playerInputActions.XRIRightInteraction.Spawn.performed += SpawnObject_performed;
-  
-        // playerInputActions.XRIRightInteraction.Activate.canceled += DrawLine_endDrawing;
-
-        playerInputActions.XRILeftInteraction.Delete.performed += DeleteSelectedObjects_performed;
+       
     }
     private void OnEnable()
     {
-        playerInputActions.XRIRightInteraction.Enable();
-        playerInputActions.XRILeftInteraction.Enable();
-
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Select.performed += SelectObject_performed;
-       // playerInputActions.XRIRightInteraction.CopyPaste.performed += CopyPaste_performed;
-       // playerInputActions.XRIRightInteraction.Spawn.performed += SpawnObject_performed;
-
-        // playerInputActions.XRIRightInteraction.Activate.canceled += DrawLine_endDrawing;
-
-        playerInputActions.XRILeftInteraction.Delete.performed += DeleteSelectedObjects_performed;
+       
     }
     private void OnDisable()
     {
-        //adding actionListeners
-        playerInputActions.XRIRightInteraction.Select.performed -= SelectObject_performed;
-       // playerInputActions.XRIRightInteraction.CopyPaste.performed -= CopyPaste_performed;
-        //playerInputActions.XRIRightInteraction.Spawn.performed -= SpawnObject_performed;
-
-        // playerInputActions.XRIRightInteraction.Activate.canceled += DrawLine_endDrawing;
-
-        playerInputActions.XRILeftInteraction.Delete.performed -= DeleteSelectedObjects_performed;
+       
     }
 
     private void CopyPaste_performed(InputAction.CallbackContext context)
@@ -93,12 +64,12 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
         }
     }
 
-    private void SpawnObject_performed(InputAction.CallbackContext context)
+    private void SpawnObject_performed()
     {
         objectInteractionHandler.SpawnObject();
     }
 
-    private void DeleteSelectedObjects_performed(InputAction.CallbackContext context)
+    private void DeleteSelectedObjects_performed()
     {
         if (selectedObjects.Count > 0)
         {
@@ -108,7 +79,7 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
 
 
 
-    private void SelectObject_performed(InputAction.CallbackContext context)
+    private void SelectObject_performed()
     {
 
         Vector3 controllerPosition = controller.position;
@@ -121,7 +92,6 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
         if (Physics.Raycast(ray, out hit))
         {
 
-            Debug.LogError("Hit : " + hit.transform.name +"   :" +hit.collider.transform.name + " " + hit.transform.tag);
             if (hit.transform.tag == "Player")
             {
 
@@ -147,6 +117,14 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
 
     void Update()
     {
+
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryHandTrigger))
+        {
+            SelectObject_performed();
+        }
+     
+    
+
                
         Vector3 controllerPosition = controller.position;
         Quaternion controllerRotation = controller.rotation;
@@ -255,7 +233,7 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
     }
     void MoveObjects()
     {
-        Vector2 movementInput = playerInputActions.XRIRightInteraction.Move.ReadValue<Vector2>();
+        Vector2 movementInput =  OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick);
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
 
@@ -305,7 +283,7 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
 
     public void  MoveObjectsXZ()
     {
-        Vector2 movementInput = playerInputActions.XRIRightInteraction.Move.ReadValue<Vector2>();
+        Vector2 movementInput =  OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick);
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
 
@@ -362,7 +340,7 @@ public class MultiObjectSelector : Fusion.NetworkBehaviour
     void MoveObjects1()
     {
 
-        Vector2 joystickInput = playerInputActions.XRIRightInteraction.Move.ReadValue<Vector2>();
+        Vector2 joystickInput =   OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick);
 
         Vector3 moveDirection = new Vector3(joystickInput.x, 0, joystickInput.y) * moveSpeed * Time.deltaTime;
 

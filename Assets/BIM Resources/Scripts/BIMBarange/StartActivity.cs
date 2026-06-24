@@ -28,16 +28,16 @@ public class StartActivity : NetworkBehaviour
 
     public static StartActivity Local { get; private set; }
 
-    public override void Spawned()
-    {
-        if (HasInputAuthority) Local = this;
+        public override void Spawned()
+        {
+            if (HasInputAuthority) Local = this;
 
-        // your existing init...
-        if (Object.HasStateAuthority) IsInteractionMenuActive = false;
-        interactionMenu?.SetActive(false);
-        bimInteraction?.SetActive(false);
-        isMenuActivated = false;
-    }
+            // your existing init...
+            if (Object.HasStateAuthority) IsInteractionMenuActive = true;
+            interactionMenu?.SetActive(true);
+            bimInteraction?.SetActive(true);
+            isMenuActivated = true;
+        }
 
 
 
@@ -72,8 +72,7 @@ public class StartActivity : NetworkBehaviour
                 activityStartButton.SetActive(true);
                 startActivityGO.SetActive(true);
             }
-        }
-        catch(System.Exception e)
+        }catch(System.Exception e)
         {
 
         }
@@ -120,8 +119,4 @@ public class StartActivity : NetworkBehaviour
             Debug.LogWarning("StartActivity.Local not spawned/ready yet.");
     }
 
-    public int GetMaxPlayer()
-    {
-        return MaxPlayers;
-	}
 }

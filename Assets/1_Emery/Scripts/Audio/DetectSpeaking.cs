@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Multiplayer.Tools.NetStatsMonitor;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Events;
@@ -12,7 +13,7 @@ public class DetectSpeaking : MonoBehaviour
 
 	[Tooltip("Le seuil de volume en décibels (dBFS) pour détecter la voix (ex: -30 pour un son modéré, 0 est le volume maximum).")]
 	[SerializeField]
-	private float dbThreshold = -30f;
+	private float dbThreshold = -70f;
 
 	[Tooltip("Le temps en secondes pendant lequel le joueur doit parler en continu pour valider la détection.")]
 	[SerializeField]
@@ -40,7 +41,17 @@ public class DetectSpeaking : MonoBehaviour
 	private readonly int sampleWindow = 256;
 
 	private bool hasInterrupted = false;
-	private int interruptionCount = 0;
+	private bool hasTriedToInterrupt = false;
+	//private int interruptionCount = 0;
+	private List<InterruptionData> interruptions = new List<InterruptionData>();
+	[SerializeField]
+	[Tooltip("Durée maximale d'une section pour l'évaluation des interruptions.")]
+	private float sizeTimerCurrentSection = 60f;
+	private float timerCurrentSection = 0f;
+	[SerializeField]
+	private float ratioInterruption = 0.62f;
+	[SerializeField]
+	private int thresholdInterruption = 3;
 
 	// Start is called before the first frame update
 	void Start()
@@ -75,13 +86,61 @@ public class DetectSpeaking : MonoBehaviour
 
 			Debug.Log("Microphone sélectionné : " + micDevice);
 			
-			// Enregistrement continu (boucle)
+			// Enregistrement continu avec délai d'initialisation
 			micClip = Microphone.Start(micDevice, true, 10, 44100);
+			StartCoroutine(WaitForMicrophoneInitialization());
 		}
 		else
 		{
 			Debug.LogWarning("Aucun microphone détecté !");
 		}
+	}
+
+	private float GetMicrophoneVolume()
+	{
+		int micPosition = Microphone.GetPosition(micDevice);
+		
+		if (micPosition < 0 || micPosition < sampleWindow)
+			return 0f;
+
+		int startPosition = micPosition - sampleWindow;
+		
+		// Vérifier que la position est valide
+		if (startPosition < 0)
+			startPosition = 0;
+
+		float[] waveData = new float[sampleWindow];
+		
+		try
+		{
+			micClip.GetData(waveData, startPosition);
+		}
+		catch (System.Exception ex)
+		{
+			Debug.LogWarning($"[Emery] Erreur lecture audio: {ex.Message}");
+			return 0f;
+		}
+
+		float levelMax = 0f;
+		for (int i = 0; i < sampleWindow; i++)
+		{
+			float wavePeak = waveData[i] * waveData[i];
+			if (levelMax < wavePeak)
+			{
+				levelMax = wavePeak;
+			}
+		}
+
+		float volume = Mathf.Sqrt(levelMax);
+
+		return volume;
+	}
+
+	private IEnumerator WaitForMicrophoneInitialization()
+	{
+		yield return new WaitForSeconds(1.5f);
+		Debug.Log($"[Emery] Microphone initialisé: {Microphone.IsRecording(micDevice)}");
+		Debug.Log($"[Emery] Clip longueur: {micClip.length}, Fréquence: {micClip.frequency}");
 	}
 
 	// Update is called once per frame
@@ -90,22 +149,8 @@ public class DetectSpeaking : MonoBehaviour
 		if (SpeakingInterruption.Instance == null)
 			return;
 
-		if (SpeakingInterruption.Instance.GetLastInterrupter() == index)
-		{
-			if (!hasInterrupted)
-			{
-				hasInterrupted = true;
-				ShowFeedback();
-				interruptionCount++;
-				if (interruptionCount > 3)
-				{
-					SpeakingInterruption.Instance.RPC_ShowFeedbackInterruptionToAll(index);
-					interruptionCount = 0; // Réinitialiser le compteur après le feedback
-				}
-			} 
-		} else 
-			hasInterrupted = false;
-
+		// Gestion de l'interruption
+		CheckLastsInterruptions();
 
 		if (micClip != null)
 		{
@@ -125,6 +170,7 @@ public class DetectSpeaking : MonoBehaviour
 
 				if (currentSpeakingTime >= timeRequiredToSpeak)
 				{
+					SpeakingInterruption.Instance.RPC_SetIsPausing(index, false);
 					if (!isSpeaking)
 					{
 						currentSilentTime = 0f; // Réinitialiser le temps de silence
@@ -143,39 +189,93 @@ public class DetectSpeaking : MonoBehaviour
 					{
 						isSpeaking = false;
 						SpeakingInterruption.Instance.SetIsSpeaking(index, isSpeaking);
+						SpeakingInterruption.Instance.RPC_SetIsPausing(index, false);
 					}
 				}
 				else
 				{
 					currentSilentTime += Time.deltaTime;
+					if (currentSilentTime > .2f)
+						SpeakingInterruption.Instance.RPC_SetIsPausing(index, true);
 				}
 			}
 		}
 
-		feedbackIsSpeaking.SetActive(isSpeaking);
+		ClearOldInterruptions();
+		//feedbackIsSpeaking.SetActive(isSpeaking);
 	}
 
-	private float GetMicrophoneVolume()
+	private void CheckLastsInterruptions()
 	{
-		int micPosition = Microphone.GetPosition(micDevice) - sampleWindow + 1;
-
-		if (micPosition < 0)
-			return 0f;
-
-		float[] waveData = new float[sampleWindow];
-		micClip.GetData(waveData, micPosition);
-
-		float levelMax = 0f;
-		for (int i = 0; i < sampleWindow; i++)
+		//On sauvegarde si le joueur a échoué à interrompre
+		if (SpeakingInterruption.Instance.GetLastTriedInterrupter() == index)
 		{
-			float wavePeak = waveData[i] * waveData[i];
-			if (levelMax < wavePeak)
+			// hasTriedToInterrupt permet d'éviter les problèmes de timing entre le joueur et le serveur.
+			if (!hasTriedToInterrupt)
 			{
-				levelMax = wavePeak;
+				hasTriedToInterrupt = true;
+
+				interruptions.Add(new InterruptionData
+				{
+					timeOfInterruption = Time.time,
+					hasSucceeded = false
+				});
 			}
 		}
+		else
+			hasTriedToInterrupt = false;
 
-		return Mathf.Sqrt(levelMax);
+		//On sauvegarde si le joueur a réussi à interrompre
+		if (SpeakingInterruption.Instance.GetLastInterrupter() == index)
+		{
+			// hasInterrupted permet d'éviter les problèmes de timing entre le joueur et le serveur.
+			if (!hasInterrupted)
+			{
+				hasInterrupted = true;
+				ShowFeedback();
+
+				interruptions.Add(new InterruptionData
+				{
+					timeOfInterruption = Time.time,
+					hasSucceeded = true
+				});
+			}
+		}
+		else
+			hasInterrupted = false;
+
+		// On compte le nombre d'interruptions réussies dans la section actuelle, si cela dépasse le ratio défini,
+		// on envoie un feedback à tous les joueurs, et on reset la section, ainsi que les interruptions.
+		timerCurrentSection += Time.deltaTime;
+		if (timerCurrentSection >= sizeTimerCurrentSection)
+		{
+			int successfulInterruptions = 0;
+			foreach (InterruptionData interruption in interruptions)
+			{
+				successfulInterruptions += interruption.hasSucceeded ? 1 : 0;
+			}
+			float ratio = interruptions.Count > 0 ? (float)successfulInterruptions / interruptions.Count : 0f;
+			if (ratio > ratioInterruption && successfulInterruptions > thresholdInterruption)
+			{
+				SpeakingInterruption.Instance.RPC_ShowFeedbackInterruptionToAll(index, successfulInterruptions);
+				interruptions.Clear();
+				timerCurrentSection = 0f;
+			}
+		}
+	}
+
+	private void ClearOldInterruptions()
+	{
+		if (interruptions.Count == 0)
+			return;
+
+		foreach (InterruptionData interruption in interruptions)
+		{
+			if (Time.time - interruption.timeOfInterruption > sizeTimerCurrentSection)
+			{
+				interruptions.Remove(interruption);
+			}
+		}
 	}
 
 	public bool GetIsSpeaking()
@@ -186,6 +286,7 @@ public class DetectSpeaking : MonoBehaviour
 	public void ShowFeedback()
 	{
 		feedbackImage.SetActive(true);
+		SpeakingInterruption.Instance.ResetLastInterrupter();
 		DataFeedbacks.Instance.AddFeedbackLog(1, "Affichage du feedback");
 		StartCoroutine(FeedbackCoroutine());
 	}
@@ -195,11 +296,28 @@ public class DetectSpeaking : MonoBehaviour
 		yield return new WaitForSeconds(lengthDisplayFeedback);
 		feedbackImage.SetActive(false);
 		DataFeedbacks.Instance.AddFeedbackLog(1, "Désactivation du feedback");
-		SpeakingInterruption.Instance.ResetLastInterrupter();
 	}
 
 	public void SetIndex(int newIndex)
 	{
 		index = newIndex;
+	}
+
+	public int GetMicrophonePosition()
+	{
+		if (micDevice == null)
+			return -1;
+		return Microphone.GetPosition(micDevice);
+	}
+
+	public AudioClip GetMicClip()
+	{
+		return micClip;
+	}
+
+	public struct InterruptionData
+	{
+		public float timeOfInterruption;
+		public bool hasSucceeded;
 	}
 }

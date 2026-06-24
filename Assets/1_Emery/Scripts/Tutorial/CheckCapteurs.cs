@@ -31,6 +31,8 @@ public class CheckCapteurs : MonoBehaviour
         {
             Permission.RequestUserPermission(Permission.Microphone);
         }
+
+        faceExpressions = GetComponent<OVRFaceExpressions>();
     }
 
     private void Update()

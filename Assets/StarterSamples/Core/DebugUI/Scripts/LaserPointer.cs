@@ -84,8 +84,7 @@ public class LaserPointer : OVRCursor
 
     public override void SetCursorRay(Transform t)
     {
-		if (t.name.Contains("Left")) return;
-		_startPoint = t.position;
+        _startPoint = t.position;
         _forward = t.forward;
         _hitTarget = false;
     }
