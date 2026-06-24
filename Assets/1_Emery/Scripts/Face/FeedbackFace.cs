@@ -68,7 +68,7 @@ public class FeedbackFace : MonoBehaviour
 				feedbackImage.GetComponent<Image>().color.g,
 				feedbackImage.GetComponent<Image>().color.b, 
 				t);
-			DataFeedbacks.Instance.AddFeedbackLog(2, $"Ratio : {t}");
+			DataFeedbacks.Instance.AddFeedbackLog($";;;;;;;;;;;;;{t};");
 			float tmpCpt = cpt;
 			float tmpLastMinuteCount = lastMinute.Count;
 			if (tmpCpt / tmpLastMinuteCount >= faceThreshold)
@@ -89,6 +89,11 @@ public class FeedbackFace : MonoBehaviour
 					//feedbackImage.SetActive(false);
 				}
 			}
+		}
+
+		if (GroupFaceFeedback.Instance.isFeedbackGroupImageActive)
+		{
+			DataFeedbacks.Instance.AddFeedbackLog($";;;;;;;;;;;;;;1;");
 		}
 	}
 

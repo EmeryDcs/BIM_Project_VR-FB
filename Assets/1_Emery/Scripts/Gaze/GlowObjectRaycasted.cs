@@ -19,9 +19,11 @@ public class GlowObjectRaycasted : NetworkBehaviour
 
 	[Networked]
 	public bool isGameStarted { get; set; } = false;
+	public bool hasNeverPutMarkerInData { get; set; } = true;
 
 	private NetworkObject currentGameObject = null;
 	private float timer = 0f;
+
 
 	/// <summary>
 	/// Récupération de tous les objets ciblés par chacun des rôles.
@@ -69,6 +71,12 @@ public class GlowObjectRaycasted : NetworkBehaviour
 		if (!isGameStarted)
 			return;
 
+		if (hasNeverPutMarkerInData)
+		{
+			DataFeedbacks.Instance.AddFeedbackLog("MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;MARKER;");
+			hasNeverPutMarkerInData = false;
+		}
+
 		if (Object == null || !Object.IsValid)
 		{
 			Debug.Log("[Emery] Update skipped : L'entité réseau n'est pas encore prête : " + Object);
@@ -76,11 +84,26 @@ public class GlowObjectRaycasted : NetworkBehaviour
 		}
 
 		NetworkObject tmpGameObject = null;
+		bool[] whoLookAtObject = new bool[3] { false, false, false };
 
 		if (lecteur_GazedObject != null && (lecteur_GazedObject == calculateur_GazedObject || lecteur_GazedObject == modelisateur_GazedObject))
 		{
 			tmpGameObject = lecteur_GazedObject;
-		} 
+
+			//Gestionnaire pour savoir qui regarde l'objet ciblé, pour les données
+			if (lecteur_GazedObject == calculateur_GazedObject)
+			{
+				whoLookAtObject[0] = true; whoLookAtObject[1] = true;
+			}
+			else if (lecteur_GazedObject == modelisateur_GazedObject)
+			{
+				whoLookAtObject[0] = true; whoLookAtObject[2] = true;
+			}
+			else if (lecteur_GazedObject == calculateur_GazedObject && lecteur_GazedObject == modelisateur_GazedObject)
+			{
+				whoLookAtObject[0] = true; whoLookAtObject[1] = true; whoLookAtObject[2] = true;
+			}
+		}
 		else if (calculateur_GazedObject != null && calculateur_GazedObject == modelisateur_GazedObject)
 		{
 			tmpGameObject = calculateur_GazedObject;
@@ -90,9 +113,11 @@ public class GlowObjectRaycasted : NetworkBehaviour
 		{
 			if (currentGameObject.TryGetComponent(out QuickOutline outline))
 			{
+				int nbPlayerLookingAtObject = 2;
 				if (calculateur_GazedObject == modelisateur_GazedObject == lecteur_GazedObject)
 				{
 					outline.OutlineColor = Color.blue;
+					nbPlayerLookingAtObject = 3;
 				}
 				else
 				{
@@ -103,7 +128,7 @@ public class GlowObjectRaycasted : NetworkBehaviour
 				if (!outline.enabled)
 					outline.enabled = true;
 				outline.SetOpacity(timer / 10);
-				DataFeedbacks.Instance.AddFeedbackLog(3, $"Feedback regard actif avec opacité : {timer/10}, sur objet : {currentGameObject.name}");
+				DataFeedbacks.Instance.AddFeedbackLog($";{currentGameObject};{timer / 10};{nbPlayerLookingAtObject};[{whoLookAtObject[0]},{whoLookAtObject[1]},{whoLookAtObject[2]}];");
 			}
 			else
 			{
@@ -116,7 +141,6 @@ public class GlowObjectRaycasted : NetworkBehaviour
 			{
 				currentOutline.SetOpacity(0);
 				currentOutline.enabled = false;
-				DataFeedbacks.Instance.AddFeedbackLog(3, "Feedback regard inactif.");
 			}
 			
 			if (tmpGameObject != null)

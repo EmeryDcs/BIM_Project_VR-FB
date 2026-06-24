@@ -43,18 +43,20 @@ public class DataFeedbacks : MonoBehaviour
 
 		// Initialise le StreamWriter
 		writer = new StreamWriter(filePath, false);  // false écrase le fichier existant
-		writer.WriteLine("Time; " +
-			"Feedback Type ; " + //0: Individuel Gaze, 1: Individuel Speech, 2: Individuel Face, 3: Collectif Gaze, 4: Collectif Speech, 5: Collectif Face
-			"Description Event"); //0: Start, 1: Stop
+		writer.WriteLine("Time ;" +
+			"GAZE; Objet regardé; Opacité; nbJoueurQuiRegardent; {tabJoueurQuiRegardent};" +
+			"VOICE; Feedback Individuel Activation/Désactivation; Feedback Collectif Activation/Désactivation; Collectif Qui a interrompu; Collectif Nombre d'interruptions; Total tentative d'interruptions; Ratio interruptions;" +
+			"FACE; Opacité feedback; Feedback Collectif Activation/Désactivation;"
+			);
 		writer.WriteLine();
 		Debug.Log("Recording started: " + filePath);
 	}
 
-	public void AddFeedbackLog(int feedbackType, string description)
+	public void AddFeedbackLog(string description)
 	{
 		if (writer != null)
 		{
-			writer.WriteLine($"{Time.time}; {feedbackType} ; {description}");
+			writer.WriteLine($"{Time.time}; {description}");
 			writer.Flush(); // Ensure data is written to file immediately
 		}
 		else

@@ -258,6 +258,7 @@ public class DetectSpeaking : MonoBehaviour
 			if (ratio > ratioInterruption && successfulInterruptions > thresholdInterruption)
 			{
 				SpeakingInterruption.Instance.RPC_ShowFeedbackInterruptionToAll(index, successfulInterruptions);
+				SendDataFeedbackCollectif(successfulInterruptions, ratio);
 				interruptions.Clear();
 				timerCurrentSection = 0f;
 			}
@@ -287,7 +288,7 @@ public class DetectSpeaking : MonoBehaviour
 	{
 		feedbackImage.SetActive(true);
 		SpeakingInterruption.Instance.ResetLastInterrupter();
-		DataFeedbacks.Instance.AddFeedbackLog(1, "Affichage du feedback");
+		DataFeedbacks.Instance.AddFeedbackLog(";;;;;;1;");
 		StartCoroutine(FeedbackCoroutine());
 	}
 
@@ -295,7 +296,12 @@ public class DetectSpeaking : MonoBehaviour
 	{
 		yield return new WaitForSeconds(lengthDisplayFeedback);
 		feedbackImage.SetActive(false);
-		DataFeedbacks.Instance.AddFeedbackLog(1, "Désactivation du feedback");
+		DataFeedbacks.Instance.AddFeedbackLog(";;;;;;0;");
+	}
+
+	private void SendDataFeedbackCollectif(int successfullInterruptions, float ratio)
+	{
+		DataFeedbacks.Instance.AddFeedbackLog($";;;;;;;1;{index};{successfullInterruptions};{interruptions.Count};{ratio};");
 	}
 
 	public void SetIndex(int newIndex)

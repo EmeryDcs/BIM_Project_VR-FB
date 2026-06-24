@@ -25,6 +25,9 @@ public class GroupFaceFeedback : NetworkBehaviour
 	[Networked]
 	private bool isGameStarted { get; set; } = false;
 
+	[Networked]
+	public bool isFeedbackGroupImageActive { get; set; } = false;
+
 	private void Awake()
 	{
 		announcementFeedback = GetComponent<AudioSource>();
@@ -86,10 +89,12 @@ public class GroupFaceFeedback : NetworkBehaviour
 
 	private IEnumerator DisableFeedbackGroupImage()
 	{
-		DataFeedbacks.Instance.AddFeedbackLog(5, "Feedback displayed for all roles.");
+		//DataFeedbacks.Instance.AddFeedbackLog(5, "Feedback displayed for all roles.");
+		isFeedbackGroupImageActive = true;
 		yield return new WaitForSeconds(timerBeforeDisablingFeedback);
 		feedbackGroupImage.gameObject.SetActive(false);
-		DataFeedbacks.Instance.AddFeedbackLog(5, "Feedback hidden after timer.");
+		//DataFeedbacks.Instance.AddFeedbackLog(5, "Feedback hidden after timer.");
+		isFeedbackGroupImageActive = false;
 	}
 
 	/// <summary>
