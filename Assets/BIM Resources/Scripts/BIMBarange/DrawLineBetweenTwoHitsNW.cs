@@ -144,7 +144,10 @@ public class DrawLineBetweenTwoHitsNW : Fusion.NetworkBehaviour
                     spawnedLine = spawnNWLine.gameObject.GetComponent<NetworkedLine>();
                     lineObj = spawnNWLine.gameObject;
                     currentLine = lineObj.GetComponent<LineRenderer>();
-                    updateLinePosition(pointA, pointB);
+
+					MeasurementHandlerV2.Instance.AddLine(spawnNWLine.gameObject);
+					MeasurementHandlerV2.Instance.lineCount++;
+					updateLinePosition(pointA, pointB);
                     DrawUI();
 
                 });
